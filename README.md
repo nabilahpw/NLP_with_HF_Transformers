@@ -17,14 +17,16 @@
 
 ```
 # TODO :
-classifier = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
-classifier("I am doing this on a regular basis, baking a cake in the morning!")
+original_model = pipeline("sentiment-analysis")
+data = "The rapid growth of electric vehicles is reshaping the automotive industry, but concerns about battery production and environmental impact still remain."
+original_model(data)
+
 ```
 
 Result : 
 
 ```
-[{'label': 'POSITIVE', 'score': 0.9959210157394409}]
+[{'label': 'POSITIVE', 'score': 0.9938055276870728}]
 ```
 
 Analysis on example 1 : 
@@ -38,177 +40,137 @@ The sentiment analysis classifier accurately detects the positive tone in the gi
 # TODO :
 classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 classifier(
-    "Cats are beloved domestic companions known for their independence and agility. These fascinating creatures exhibit a range of behaviors, from playful pouncing to peaceful purring. With their sleek fur, captivating eyes, and mysterious charm, cats have captivated humans for centuries, becoming cherished members of countless households worldwide.",
-    candidate_labels=["science", "pet", "machine learning"],
+    "The recent advancements in renewable energy technologies are shaping the future of sustainable development.",
+    candidate_labels=["environment", "energy", "climate change", "technology"]
 )
+
 ```
 
 Result : 
 
 ```
-{'sequence': 'Cats are beloved domestic companions known for their independence and agility. These fascinating creatures exhibit a range of behaviors, from playful pouncing to peaceful purring. With their sleek fur, captivating eyes, and mysterious charm, cats have captivated humans for centuries, becoming cherished members of countless households worldwide.',
- 'labels': ['pet', 'machine learning', 'science'],
- 'scores': [0.9174826145172119, 0.048576705157756805, 0.03394068405032158]}
+{'sequence': 'The recent advancements in renewable energy technologies are shaping the future of sustainable development.',
+ 'labels': ['technology', 'energy', 'environment', 'climate change'],
+ 'scores': [0.6060120463371277,
+  0.3418309986591339,
+  0.0490993931889534,
+  0.003057534573599696]}
 ```
 
 Analysis on example 2 : 
 
-The zero-shot classifier correctly identifies "pet" as the most relevant label, with a high confidence score. This shows the model's strong ability to associate descriptive context with predefined categories, even without task-specific fine-tuning or training on the input text.
+The model correctly identifies "technology" as the dominant theme in the sentence, with the highest confidence, followed by "energy," reflecting the focus on renewable energy advancements and their impact on sustainable development.
 
 ### 3. Example 3 and 3.5 - Text Generator
 
 ```
 # TODO :
-generator = pipeline("text-generation", model="distilgpt2") # or change to gpt-2
-generator(
-    "This cooking will make you",
-    max_length=30, # you can change this
-    num_return_sequences=2, # and this too
-)
+generator = pipeline('text-generation', model = 'gpt2')
+generator("Artificial intelligence is revolutionizing the way we", max_length = 30, num_return_sequences=3)
 ```
 
 Result : 
 
 ```
-[{'generated_text': 'This cooking will make you even richer. I used to work too little, I thought it was kind of ridiculous to take it that far. I was'},
- {'generated_text': 'This cooking will make you feel alive for hours every afternoon. It would also help keep your children in school throughout the day.\n\n\nOne of'}]
+[{'generated_text': 'Artificial intelligence is revolutionizing the way we look at and interact with our lives. The tech world is getting closer to a point where consumers will need'},
+ {'generated_text': 'Artificial intelligence is revolutionizing the way we interact with the world, and is poised to give us unprecedented insights into how our bodies are wired to interact'},
+ {'generated_text': 'Artificial intelligence is revolutionizing the way we work — even for a while. Research has demonstrated that the use of artificial intelligence has the potential to become'}]
 ```
 
 Analysis on example 3 : 
 
-The text generation model produces coherent and imaginative continuations of a cooking-themed prompt. It demonstrates creativity and sentence flow, although output content may vary in tone and logic. The results showcase the model's usefulness for generating casual or narrative text.
+The model generates coherent and contextually relevant continuations of the prompt, showcasing creativity and flexibility in expanding on the theme of artificial intelligence's impact on various aspects of life.
 
-```
-unmasker = pipeline("fill-mask", "distilroberta-base")
-unmasker("This person is the one who <mask> my purse", top_k=4)
-```
-
-Result : 
-
-```
-[{'score': 0.8569591641426086,
-  'token': 8268,
-  'token_str': ' stole',
-  'sequence': 'This person is the one who stole my purse'},
- {'score': 0.030922001227736473,
-  'token': 25702,
-  'token_str': ' snatched',
-  'sequence': 'This person is the one who snatched my purse'},
- {'score': 0.02246157079935074,
-  'token': 12297,
-  'token_str': ' steals',
-  'sequence': 'This person is the one who steals my purse'},
- {'score': 0.01934182271361351,
-  'token': 2263,
-  'token_str': ' broke',
-  'sequence': 'This person is the one who broke my purse'}]
-```
-
-Analysis on example 3.5 : 
-
-The fill-mask pipeline accurately infers masked words based on context. The top result "stole" makes sense, supported by a high confidence score. Other predictions are also contextually appropriate, illustrating the model's nuanced understanding of sentence structure and intent.
 
 ### 4. Example 4 - Name Entity Recognition (NER)
 
 ```
 # TODO :
-ner = pipeline("ner", model="dbmdz/bert-large-cased-finetuned-conll03-english", grouped_entities=True)
-ner("My name is Arifian, I am an AI Technical Mentor at Infinite Learning, Batam Island")
+nlp = pipeline("ner", model="Jean-Baptiste/camembert-ner", grouped_entities=True)
+example = "His name is Haris Januar and He lives in Bandung."
+
+ner_results = nlp(example)
+print(ner_results)
 ```
 
 Result : 
 
 ```
-[{'entity_group': 'PER',
-  'score': np.float32(0.9978566),
-  'word': 'Arifian',
-  'start': 11,
-  'end': 18},
- {'entity_group': 'ORG',
-  'score': np.float32(0.7615841),
-  'word': 'AI',
-  'start': 28,
-  'end': 30},
- {'entity_group': 'ORG',
-  'score': np.float32(0.9623977),
-  'word': 'Infinite Learning',
-  'start': 51,
-  'end': 68},
- {'entity_group': 'LOC',
-  'score': np.float32(0.9913697),
-  'word': 'Batam Island',
-  'start': 70,
-  'end': 82}]
+[{'entity_group': 'PER', 'score': np.float32(0.9976789), 'word': 'Haris Januar', 'start': 11, 'end': 24}, {'entity_group': 'LOC', 'score': np.float32(0.9986707), 'word': 'Bandung', 'start': 40, 'end': 48}]
 ```
 
 Analysis on example 4 : 
 
-The named entity recognizer successfully identifies personal, organizational, and location entities from the sentence. Grouped outputs are relevant and accurate, with high confidence scores, demonstrating the model’s effectiveness in real-world applications like information extraction or document tagging.
+The model accurately identifies "Haris Januar" as a person and "Bandung" as a location, with high confidence scores, demonstrating its effectiveness in named entity recognition for personal and geographical data.
 
 ### 5. Example 5 - Question Answering
 
 ```
 # TODO :
-qa_model = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")
-question = "What four-legged animal sometimes comes inside the house and likes to sleep?"
-context = "Four-legged animal that sometimes comes inside the house and likes to sleep is a cat"
-qa_model(question = question, context = context)
+question_answerer = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")
+question_answerer(
+    question="What is the capital city of Japan?",
+    context="Tokyo is the capital city of Japan. It is one of the most populous cities in the world and is known for its modern architecture, shopping, and entertainment districts. Tokyo is also a major hub for business and culture in Asia.",
+)
+
 ```
 
 Result : 
 
 ```
-{'score': 0.6314472556114197, 'start': 79, 'end': 84, 'answer': 'a cat'}
+{'score': 0.975875973701477, 'start': 0, 'end': 5, 'answer': 'Tokyo'}
 ```
 
 Analysis on example 5 : 
 
-The question-answering model correctly extracts the most relevant phrase "a cat" from the provided context. Its confidence score is decent, and the model showcases strong capabilities in understanding natural questions and matching them with the most likely answer span.
+The model accurately extracts "Tokyo" as the answer with a high confidence score, demonstrating its ability to efficiently retrieve specific information from the provided context.
 
 ### 6. Example 6 - Text Summarization
 
 ```
 # TODO :
-summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6",  max_length=59)
 summarizer(
     """
-Machine Learning adalah cabang dari Kecerdasan Buatan yang memungkinkan sistem komputer untuk belajar dari data tanpa diprogram secara eksplisit. 1  Melalui algoritma, mesin dapat mengidentifikasi pola, membuat prediksi, dan meningkatkan kinerja seiring waktu. Penerapannya luas, mulai dari rekomendasi produk hingga diagnosis medis, mengubah cara kita berinteraksi dengan teknologi. 
+Indonesia is a Southeast Asian country comprising over 17,000 islands, making it the largest archipelago in the world. It is known for its diverse culture, rich history, and stunning natural landscapes, including rainforests, mountains, and beautiful beaches. Jakarta, the capital, is one of the largest urban areas in the world. Indonesia is also home to many ethnic groups and languages, with Bahasa Indonesia serving as the official language. The country is a major player in regional economics and politics and is a member of organizations such as ASEAN and the G20. Despite its economic growth, Indonesia faces challenges like deforestation, natural disasters, and social inequality.
 """
 )
+
 ```
 
 Result : 
 
 ```
-[{'summary_text': ' Machine Learning adalah cabang dari Kecerdasan Buatan yang memungkinkan komputer untuk belajar dari data tanpa diprogram secara eksplisit . Melalui algoritma, mesin dapat mengidentifikasi pola, membuat prediksi, dan meningkatkan kinerja seiring waktu .'}]
+[{'summary_text': ' Indonesia is a Southeast Asian country with over 17,000 islands . It is known for its diverse culture, rich history, and stunning natural landscapes . Indonesia is also home to many ethnic groups and languages, with Bahasa Indonesia serving as the official language . The country is a major player'}]
 
 ```
 
 Analysis on example 6 :
 
-The summarization pipeline effectively condenses the core idea of the paragraph into a shorter version. It maintains key concepts like machine learning, pattern recognition, and practical applications, reflecting the model's strength in content compression without major loss of information.
+The summarization model effectively condenses the key points about Indonesia’s geography, culture, and challenges into a concise version, while retaining the core information.
 
 ### 7. Example 7 - Translation
 
 ```
 # TODO :
-translator_id = pipeline("translation", model="Helsinki-NLP/opus-mt-id-fr")
-translator_id("Hari ini masak apa, chef?")
+translator = pipeline("translation_en_to_de", model="t5-small")
+print(translator("I love spicy food in Bangkok", max_length=40))
+
 ```
 
 Result : 
 
 ```
-[{'translation_text': "Qu'est-ce qu'on fait aujourd'hui, chef ?"}]
+[{'translation_text': 'Ich liebe würziges Essen in Bangkok'}]
 
 ```
 
 Analysis on example 7 :
 
-The translation model delivers an accurate and context-aware French translation of the Indonesian sentence. It handles informal, conversational input smoothly, making it suitable for multilingual communication tasks and cross-language understanding in casual or daily scenarios.
+The translation model accurately translates the English sentence "I love spicy food in Bangkok" into German, demonstrating its ability to handle casual and context-aware translations.
 
 ---
 
 ## Analysis on this project
 
-This project offers a practical introduction to various NLP tasks using Hugging Face pipelines. Each example is easy to follow and demonstrates real-world use cases. The variety of models shows the flexibility of transformer-based solutions in solving different types of language problems.
+This project demonstrates the versatility of Hugging Face pipelines across various NLP tasks, including sentiment analysis, text generation, named entity recognition, and translation. Each example highlights the models' ability to process and interpret natural language with high accuracy, showcasing their real-world applications in diverse domains.
